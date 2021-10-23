@@ -45,7 +45,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Spinner
+<!--        <Spinner-->
+<!--            android:id="@+id/spinnerImages"-->
+<!--            android:layout_width="409dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="32dp"-->
+<!--            android:textColor="#000000"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintHorizontal_bias="0.5"-->
+<!--            app:layout_constraintStart_toEndOf="@+id/nav_view"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/textView"-->
+<!--            style="@android:style/Widget.Holo.Light.Spinner"/>-->
+
+
+<!--        This spinner is implemented using the library https://github.com/miteshpithadiya/SearchableSpinner-->
+<!--        it works good.-->
+        <com.toptoche.searchablespinnerlibrary.SearchableSpinner
             android:id="@+id/spinnerImages"
             android:layout_width="409dp"
             android:layout_height="wrap_content"

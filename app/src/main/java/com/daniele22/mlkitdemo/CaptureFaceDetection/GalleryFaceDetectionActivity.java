@@ -247,6 +247,7 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
                     } else {
                         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
                         Log.i(TAG, "No faces");
+                        imgNameTextView.append(" -> No faces detecetd");
                     }
                 }).addOnFailureListener(e -> Log.i(TAG, e.toString()));
     }
@@ -268,19 +269,19 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
             drawLandMark(face.getLandmark(FaceLandmark.MOUTH_RIGHT));
             drawLandMark(face.getLandmark(FaceLandmark.LEFT_CHEEK));
             drawLandMark(face.getLandmark(FaceLandmark.RIGHT_CHEEK));
-            drawContours(face.getContour(FaceContour.FACE).getPoints());
-            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM).getPoints());
-            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM).getPoints());
-            drawContours(face.getContour(FaceContour.LEFT_EYE).getPoints());
-            drawContours(face.getContour(FaceContour.RIGHT_EYE).getPoints());
-            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_TOP).getPoints());
-            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_TOP).getPoints());
-            drawContours(face.getContour(FaceContour.LOWER_LIP_BOTTOM).getPoints());
-            drawContours(face.getContour(FaceContour.LOWER_LIP_TOP).getPoints());
-            drawContours(face.getContour(FaceContour.UPPER_LIP_BOTTOM).getPoints());
-            drawContours(face.getContour(FaceContour.UPPER_LIP_TOP).getPoints());
-            drawContours(face.getContour(FaceContour.NOSE_BRIDGE).getPoints());
-            drawContours(face.getContour(FaceContour.NOSE_BOTTOM).getPoints());
+            drawContours(face.getContour(FaceContour.FACE));
+            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM));
+            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM));
+            drawContours(face.getContour(FaceContour.LEFT_EYE));
+            drawContours(face.getContour(FaceContour.RIGHT_EYE));
+            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_TOP));
+            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_TOP));
+            drawContours(face.getContour(FaceContour.LOWER_LIP_BOTTOM));
+            drawContours(face.getContour(FaceContour.LOWER_LIP_TOP));
+            drawContours(face.getContour(FaceContour.UPPER_LIP_BOTTOM));
+            drawContours(face.getContour(FaceContour.UPPER_LIP_TOP));
+            drawContours(face.getContour(FaceContour.NOSE_BRIDGE));
+            drawContours(face.getContour(FaceContour.NOSE_BOTTOM));
         }
         imageViewCanvas.setImageBitmap(bitmap);
     }
@@ -334,26 +335,29 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
 
     /**
      * Draw the contour in the canvas
-     * @param points list of points (x, y) that form the contour
+     * @param contour face contour to form the list of points (x, y)
      */
-    private void drawContours(List<PointF> points) {
+    private void drawContours(FaceContour contour) {
         int counter = 0;
-        for (PointF point : points) {
-            if (counter != points.size() - 1) {
-                canvas.drawLine(point.x,
-                        point.y,
-                        points.get(counter + 1).x,
-                        points.get(counter + 1).y,
-                        linePaint);
-            } else {
-                canvas.drawLine(point.x,
-                        point.y,
-                        points.get(0).x,
-                        points.get(0).y,
-                        linePaint);
+        if (contour != null){
+            List<PointF> points = contour.getPoints();
+            for (PointF point : points) {
+                if (counter != points.size() - 1) {
+                    canvas.drawLine(point.x,
+                            point.y,
+                            points.get(counter + 1).x,
+                            points.get(counter + 1).y,
+                            linePaint);
+                } else {
+                    canvas.drawLine(point.x,
+                            point.y,
+                            points.get(0).x,
+                            points.get(0).y,
+                            linePaint);
+                }
+                counter++;
+                canvas.drawCircle(point.x, point.y, 3, dotPaint);
             }
-            counter++;
-            canvas.drawCircle(point.x, point.y, 3, dotPaint);
         }
     }
 

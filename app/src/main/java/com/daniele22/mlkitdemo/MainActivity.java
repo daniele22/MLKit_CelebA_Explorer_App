@@ -20,14 +20,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.daniele22.mlkitdemo.CaptureFaceDetection.GalleryFaceDetectionActivity;
-//import com.asmaamir.mlkitdemo.CustomModelDetection.CustomModelDetectionActivity;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceContour;
@@ -51,6 +48,8 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+//import com.asmaamir.mlkitdemo.CustomModelDetection.CustomModelDetectionActivity;
+
 interface Callback {
     void myResponseCallback(String result, int index);
 }
@@ -62,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
             new String[]{"android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.READ_EXTERNAL_STORAGE"};
     public static final int REQUEST_CODE_PERMISSION = 111;
 
-    private static DrawerLayout drawerLayout;
-    private static ActionBarDrawerToggle actionBarDrawerToggle;
+//    private static DrawerLayout drawerLayout;
+//    private static ActionBarDrawerToggle actionBarDrawerToggle;
 
     private File sd;
     private static ArrayList<String> myList;
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView imgNameView;
     private Button invisibleBtn;
 
-    private boolean do_background_operation = false;
+    private final boolean do_background_operation = false;
     private Context context;
 
     /**
@@ -85,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public ArrayList<String> getFileList() {
         // read the txt file 'celeba_file_names.txt' in asset with all the image names
-        BufferedReader abc = null;
-        ArrayList<String> celebaFileNames = new ArrayList<String>();
+        BufferedReader abc;
+        ArrayList<String> celebaFileNames = new ArrayList<>();
         try {
             abc = new BufferedReader(new InputStreamReader(
                     getAssets().open("celeba_file_names.txt")));
@@ -96,8 +95,6 @@ public class MainActivity extends AppCompatActivity {
             }
             abc.close();
             System.out.println("Number of file detected: " + celebaFileNames.size());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -125,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("Internal storage path: " + path);
             String tmp_filename = "/celeba-mlkit-analysis_200k.txt"; // file with the data already alanysed
             File tml_file = new File(path, tmp_filename);
-            ArrayList<String> allAnalysedFiles = new ArrayList<String>(); // list of all filenames
+            ArrayList<String> allAnalysedFiles = new ArrayList<>(); // list of all filenames
             try {
                 abc = new BufferedReader(new FileReader(tml_file));
                 String line;
@@ -135,8 +132,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 abc.close();
                 System.out.println("Number of file already analysed detected: " + allAnalysedFiles.size());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -194,16 +189,14 @@ public class MainActivity extends AppCompatActivity {
         imgNameView = findViewById(R.id.imgName);
         invisibleBtn = findViewById(R.id.invisibleBtn);
         // The invisible button is needed to avoid lock of the screen
-        invisibleBtn.setOnClickListener(v -> {
-            System.out.println("CLICKED INVISIBLE BUTTON");
-        });
+        invisibleBtn.setOnClickListener(v -> System.out.println("CLICKED INVISIBLE BUTTON"));
         if (!allPermissionsGranted()) {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSION);
         } else {
             initHome();
         }
         // add chronometer to the view
-        Chronometer simpleChronometer = (Chronometer) findViewById(R.id.simpleChronometer); // initiate a chronometer
+        Chronometer simpleChronometer = findViewById(R.id.simpleChronometer); // initiate a chronometer
         simpleChronometer.start(); // start a chronometer
     }
 
@@ -211,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
      * Init the main scree of the app
      */
     public void initHome() {
-        Spinner spinner = (Spinner) findViewById(R.id.spinnerImages);
+        Spinner spinner = findViewById(R.id.spinnerImages);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null && !extras.getBoolean("reloadAll")) {
@@ -434,19 +427,19 @@ public class MainActivity extends AppCompatActivity {
             String mouthright = getLandMarkString(face.getLandmark(FaceLandmark.MOUTH_RIGHT));
             String leftcheek = getLandMarkString(face.getLandmark(FaceLandmark.LEFT_CHEEK));
             String rightcheek = getLandMarkString(face.getLandmark(FaceLandmark.RIGHT_CHEEK));
-            String face_p = getContoursString(face.getContour(FaceContour.FACE).getPoints());
-            String lefteyebrowbottom_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM).getPoints());
-            String righteyebrowbottom_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM).getPoints());
-            String lefteye_p = getContoursString(face.getContour(FaceContour.LEFT_EYE).getPoints());
-            String righeye_p = getContoursString(face.getContour(FaceContour.RIGHT_EYE).getPoints());
-            String lefteyebrowtop_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_TOP).getPoints());
-            String righteyebrowtop_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_TOP).getPoints());
-            String lowerlipbottom_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_BOTTOM).getPoints());
-            String lowerliptop_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_TOP).getPoints());
-            String upperlipbottom_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_BOTTOM).getPoints());
-            String upperliptop_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_TOP).getPoints());
-            String nosebridge_p = getContoursString(face.getContour(FaceContour.NOSE_BRIDGE).getPoints());
-            String nosebottom_p = getContoursString(face.getContour(FaceContour.NOSE_BOTTOM).getPoints());
+            String face_p = getContoursString(face.getContour(FaceContour.FACE));
+            String lefteyebrowbottom_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM));
+            String righteyebrowbottom_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM));
+            String lefteye_p = getContoursString(face.getContour(FaceContour.LEFT_EYE));
+            String righeye_p = getContoursString(face.getContour(FaceContour.RIGHT_EYE));
+            String lefteyebrowtop_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_TOP));
+            String righteyebrowtop_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_TOP));
+            String lowerlipbottom_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_BOTTOM));
+            String lowerliptop_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_TOP));
+            String upperlipbottom_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_BOTTOM));
+            String upperliptop_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_TOP));
+            String nosebridge_p = getContoursString(face.getContour(FaceContour.NOSE_BRIDGE));
+            String nosebottom_p = getContoursString(face.getContour(FaceContour.NOSE_BOTTOM));
             res = props + "," + leftear + "," + rightear + "," + lefteye + "," + righteye + "," + mouthbottom + "," + mouthleft + "," + mouthright + "," + leftcheek + "," + rightcheek + "," + face_p + "," + lefteyebrowbottom_p + "," + righteyebrowbottom_p + "," + lefteye_p + "," + righeye_p + "," + lefteyebrowtop_p + "," + righteyebrowtop_p + "," + lowerlipbottom_p + "," + lowerliptop_p + "," + upperlipbottom_p + "," + upperliptop_p + "," + nosebridge_p + "," + nosebottom_p;
         }
         return res;
@@ -502,16 +495,16 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Compute a string with all the contour data
-     * @param points
+     * @param contour face contour
      * @return
      */
-    private String getContoursString(List<PointF> points) {
+    private String getContoursString(FaceContour contour) {
         String res = "";
-        if (points != null) {
+        if (contour != null) {
+            List<PointF> points = contour.getPoints();
             List<String> contours = points.stream().map(p -> p.toString()).collect(Collectors.toList());
             res = Arrays.toString(contours.toArray());
             res = res.replace(",", ";");
-            System.out.println("Esempio di lista di contours di size " + points.size());
             System.out.println(res);
         }
         return res;
@@ -582,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             System.out.println("Start computing celeba info");
-            // We sart from index 1 because the first item is "No Selection" that
+            // We start from index 1 because the first item is "No Selection" that
             // is added to show no selection in dropdown menu
             computeCelebaInfoAndSaveToFile(myList, 1);
             return null;
@@ -598,7 +591,7 @@ public class MainActivity extends AppCompatActivity {
     TimerTask timerTask;
 
     /**
-     * Authomatic button click with timer.
+     * Automatic button click with timer.
      * This is needed to avoid power of in the android emulator.
      */
     public void callAsynchronousBtnClick() {
