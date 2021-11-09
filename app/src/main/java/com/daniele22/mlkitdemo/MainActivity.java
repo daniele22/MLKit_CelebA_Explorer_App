@@ -48,8 +48,6 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-//import com.asmaamir.mlkitdemo.CustomModelDetection.CustomModelDetectionActivity;
-
 interface Callback {
     void myResponseCallback(String result, int index);
 }
@@ -80,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Get the list of filenames from a file called 'celeba_file_names.txt' save in the asset package
+     *
      * @return list of names
      */
     public ArrayList<String> getFileList() {
@@ -89,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             abc = new BufferedReader(new InputStreamReader(
                     getAssets().open("celeba_file_names.txt")));
+//                    getAssets().open("null_names.csv")));
             String line;
             while ((line = abc.readLine()) != null) {
                 celebaFileNames.add(line);
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        }
 
-        if (do_background_operation){
+        if (do_background_operation) {
             // Read the names of files already analysed
             File path = context.getFilesDir(); // internal storage
             System.out.println("Internal storage path: " + path);
@@ -141,20 +141,21 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < listCelebaFiles.length; i++) {
                 String filename = listCelebaFiles[i];//.getName();
                 int current = Integer.parseInt(filename.split("\\.")[0].replace("img", ""));
-                if ( current > last ){
+                if (current > last) {
 //                if (filename.contains("img") && !allAnalysedFiles.contains(filename)) {
                     file_list.add(filename);
                 }
             }
             System.out.println("filelist final length: " + file_list.size());
             return file_list;
-        }else{
+        } else {
             return celebaFileNames;
         }
     }
 
     /**
      * Check if all permission are granted
+     *
      * @return bool
      */
     private boolean allPermissionsGranted() {
@@ -209,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null && !extras.getBoolean("reloadAll")) {
             spinner.setSelection(0);
-        }else{
+        } else {
             myList = getFileList();
 
             // Add elements to the spinner
@@ -247,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        initNavigationDrawer(); //TODO rimuovi
 
-        if (do_background_operation){
+        if (do_background_operation) {
             new LongOperation(this).execute();
             startTimer();
         }
@@ -295,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Load a new activity
+     *
      * @param c
      */
     private void switchActivity(Class c) {
@@ -305,6 +307,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Load a new activity and pass to the new activity the name of the file to show
+     *
      * @param c
      * @param filename file to show in the new activity
      */
@@ -322,6 +325,8 @@ public class MainActivity extends AppCompatActivity {
 //        return super.onOptionsItemSelected(item);
 //    }
 
+
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Background computation part
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -330,11 +335,11 @@ public class MainActivity extends AppCompatActivity {
      * Compute the info about CelebA dataset and save the information in a txt file.
      * The hole operation is done in background.
      * The function is a recursive function that call itself
+     *
      * @param filenames list of file to analyse
-     * @param index current index
+     * @param index     current index
      */
     private void computeCelebaInfoAndSaveToFile(ArrayList<String> filenames, int index) {
-
         String mDrawableName = filenames.get(index);
         System.out.println("Compute File: " + mDrawableName);
         runOnUiThread(new Runnable() {
@@ -372,6 +377,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Use MLKIT to analyse the image
+     *
      * @param image
      * @param imagename
      * @param index
@@ -392,12 +398,24 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(mlFaces -> {
                     if (!mlFaces.isEmpty()) {
                         if (mlFaces.size() == 1) { // We assume that there is only a single face in the image
-                            data.set(getFaceDataString(mlFaces)); // process the face
+                            data.set(getFaceDataString(mlFaces.get(0))); // process the face
                         } else {
                             Log.i(TAG, "Multiple faces detected");
+                            float max_area = 0;
+                            String main_face_data = "";
+                            // take the main face based on bbox area
+                            for (Face face : mlFaces){
+                                float face_area = computeFaceBboxArea(face);
+                                if (face_area > max_area) {
+                                    String face_data = getFaceDataString(face);
+                                    main_face_data = face_data;
+                                }
+                            }
+                            data.set(main_face_data + " ---faceNumber: "+mlFaces.size());
                         }
                     } else {
                         Log.i(TAG, "No faces");
+                        data.set("---faceNumber: 0 No faces detected ");
                     }
                 })
                 .addOnFailureListener(e -> Log.i(TAG, e.toString()))
@@ -408,46 +426,67 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    public float computeFaceBboxArea(Face face){
+        float area = 0;
+        FaceContour fc = face.getContour(FaceContour.FACE);
+        if (fc != null){
+            List<PointF> points = fc.getPoints();
+            float x_min = 1000;
+            float x_max = 0;
+            float y_min = 1000;
+            float y_max = 0;
+            for (PointF point : points) {
+                if (point.x < x_min) x_min = point.x;
+                if (point.x > x_max) x_max = point.x;
+                if (point.y < y_min) y_min = point.y;
+                if (point.y > y_max) y_max = point.y;
+            }
+            float width = x_max - x_min;
+            float height = y_max - y_min;
+            area = width * height;
+        }
+        return area;
+    }
 
     /**
      * Compute all the data and transform them to a single string separated by commas
-     * @param faces we assume a single face
+     *
+     * @param face we assume a single face
      * @return
      */
-    private String getFaceDataString(List<Face> faces) {
+    private String getFaceDataString(Face face) {
         String res = "";
-        for (Face face : faces) {
-            String props = getPropsString(face);
-            String leftear = getLandMarkString(face.getLandmark(FaceLandmark.LEFT_EAR));
-            String rightear = getLandMarkString(face.getLandmark(FaceLandmark.RIGHT_EAR));
-            String lefteye = getLandMarkString(face.getLandmark(FaceLandmark.LEFT_EYE));
-            String righteye = getLandMarkString(face.getLandmark(FaceLandmark.RIGHT_EYE));
-            String mouthbottom = getLandMarkString(face.getLandmark(FaceLandmark.MOUTH_BOTTOM));
-            String mouthleft = getLandMarkString(face.getLandmark(FaceLandmark.MOUTH_LEFT));
-            String mouthright = getLandMarkString(face.getLandmark(FaceLandmark.MOUTH_RIGHT));
-            String leftcheek = getLandMarkString(face.getLandmark(FaceLandmark.LEFT_CHEEK));
-            String rightcheek = getLandMarkString(face.getLandmark(FaceLandmark.RIGHT_CHEEK));
-            String face_p = getContoursString(face.getContour(FaceContour.FACE));
-            String lefteyebrowbottom_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM));
-            String righteyebrowbottom_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM));
-            String lefteye_p = getContoursString(face.getContour(FaceContour.LEFT_EYE));
-            String righeye_p = getContoursString(face.getContour(FaceContour.RIGHT_EYE));
-            String lefteyebrowtop_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_TOP));
-            String righteyebrowtop_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_TOP));
-            String lowerlipbottom_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_BOTTOM));
-            String lowerliptop_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_TOP));
-            String upperlipbottom_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_BOTTOM));
-            String upperliptop_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_TOP));
-            String nosebridge_p = getContoursString(face.getContour(FaceContour.NOSE_BRIDGE));
-            String nosebottom_p = getContoursString(face.getContour(FaceContour.NOSE_BOTTOM));
-            res = props + "," + leftear + "," + rightear + "," + lefteye + "," + righteye + "," + mouthbottom + "," + mouthleft + "," + mouthright + "," + leftcheek + "," + rightcheek + "," + face_p + "," + lefteyebrowbottom_p + "," + righteyebrowbottom_p + "," + lefteye_p + "," + righeye_p + "," + lefteyebrowtop_p + "," + righteyebrowtop_p + "," + lowerlipbottom_p + "," + lowerliptop_p + "," + upperlipbottom_p + "," + upperliptop_p + "," + nosebridge_p + "," + nosebottom_p;
-        }
+        String props = getPropsString(face);
+        String leftear = getLandMarkString(face.getLandmark(FaceLandmark.LEFT_EAR));
+        String rightear = getLandMarkString(face.getLandmark(FaceLandmark.RIGHT_EAR));
+        String lefteye = getLandMarkString(face.getLandmark(FaceLandmark.LEFT_EYE));
+        String righteye = getLandMarkString(face.getLandmark(FaceLandmark.RIGHT_EYE));
+        String mouthbottom = getLandMarkString(face.getLandmark(FaceLandmark.MOUTH_BOTTOM));
+        String mouthleft = getLandMarkString(face.getLandmark(FaceLandmark.MOUTH_LEFT));
+        String mouthright = getLandMarkString(face.getLandmark(FaceLandmark.MOUTH_RIGHT));
+        String leftcheek = getLandMarkString(face.getLandmark(FaceLandmark.LEFT_CHEEK));
+        String rightcheek = getLandMarkString(face.getLandmark(FaceLandmark.RIGHT_CHEEK));
+        String face_p = getContoursString(face.getContour(FaceContour.FACE));
+        String lefteyebrowbottom_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM));
+        String righteyebrowbottom_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM));
+        String lefteye_p = getContoursString(face.getContour(FaceContour.LEFT_EYE));
+        String righeye_p = getContoursString(face.getContour(FaceContour.RIGHT_EYE));
+        String lefteyebrowtop_p = getContoursString(face.getContour(FaceContour.LEFT_EYEBROW_TOP));
+        String righteyebrowtop_p = getContoursString(face.getContour(FaceContour.RIGHT_EYEBROW_TOP));
+        String lowerlipbottom_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_BOTTOM));
+        String lowerliptop_p = getContoursString(face.getContour(FaceContour.LOWER_LIP_TOP));
+        String upperlipbottom_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_BOTTOM));
+        String upperliptop_p = getContoursString(face.getContour(FaceContour.UPPER_LIP_TOP));
+        String nosebridge_p = getContoursString(face.getContour(FaceContour.NOSE_BRIDGE));
+        String nosebottom_p = getContoursString(face.getContour(FaceContour.NOSE_BOTTOM));
+        res = props + "," + leftear + "," + rightear + "," + lefteye + "," + righteye + "," + mouthbottom + "," + mouthleft + "," + mouthright + "," + leftcheek + "," + rightcheek + "," + face_p + "," + lefteyebrowbottom_p + "," + righteyebrowbottom_p + "," + lefteye_p + "," + righeye_p + "," + lefteyebrowtop_p + "," + righteyebrowtop_p + "," + lowerlipbottom_p + "," + lowerliptop_p + "," + upperlipbottom_p + "," + upperliptop_p + "," + nosebridge_p + "," + nosebottom_p;
         return res;
     }
 
 
     /**
      * Compute 6 values: Euler angles X, Y, Z, Smiling probability, LefEyeOpen probability, rightEyeOpen probability
+     *
      * @param face
      * @return
      */
@@ -478,6 +517,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Compute a string with all the facial landmarks points (x, y)
+     *
      * @param landmark
      * @return
      */
@@ -495,6 +535,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Compute a string with all the contour data
+     *
      * @param contour face contour
      * @return
      */
@@ -513,8 +554,9 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Write data to a new file
+     *
      * @param context
-     * @param arr list of data to write
+     * @param arr     list of data to write
      */
     private void writeDataToFile(Context context, ArrayList<String> arr) {
         File path = context.getFilesDir(); // internal storage
@@ -539,6 +581,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Append data to an existing file
+     *
      * @param context
      * @param newLine new line that is written
      */
@@ -546,7 +589,7 @@ public class MainActivity extends AppCompatActivity {
         File path = context.getFilesDir(); // internal storage
         System.out.println("Filepath: " + path);
         //File path = context.getExternalFilesDir(null); // external storage (SD card)
-        String tmp_filename = "celeba-mlkit-analysis_200k.txt";
+        String tmp_filename = "celeba-mlkit-analysis_other.txt";
         File file = new File(path, tmp_filename);
 
         try {

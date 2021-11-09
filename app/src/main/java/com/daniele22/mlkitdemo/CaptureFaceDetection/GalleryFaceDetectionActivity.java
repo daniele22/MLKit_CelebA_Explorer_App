@@ -258,7 +258,18 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
      * @param faces
      */
     private void processFaces(List<Face> faces) {
+        int i = 0;
         for (Face face : faces) {
+            // Debugging
+            i++;
+            System.out.println("Results face "+i);
+
+            if(face.getContour(FaceContour.FACE) == null){
+                System.out.println("No face contour detected for face "+i);
+            }else{
+                System.out.println("Contour detected: "+face.getContour(FaceContour.FACE).getPoints().size());
+            }
+            // End debugging
             getProps(face);
             drawLandMark(face.getLandmark(FaceLandmark.LEFT_EAR));
             drawLandMark(face.getLandmark(FaceLandmark.RIGHT_EAR));
@@ -341,7 +352,15 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
         int counter = 0;
         if (contour != null){
             List<PointF> points = contour.getPoints();
+            float x_min = 1000;
+            float x_max = 0;
+            float y_min = 1000;
+            float y_max = 0;
             for (PointF point : points) {
+                if (point.x < x_min) x_min = point.x;
+                if (point.x > x_max) x_max = point.x;
+                if (point.y < y_min) y_min = point.y;
+                if (point.y > y_max) y_max = point.y;
                 if (counter != points.size() - 1) {
                     canvas.drawLine(point.x,
                             point.y,
@@ -358,6 +377,7 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
                 counter++;
                 canvas.drawCircle(point.x, point.y, 3, dotPaint);
             }
+            canvas.drawRect(x_min, y_min, x_max, y_max, linePaint);
         }
     }
 
