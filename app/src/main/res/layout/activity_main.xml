@@ -12,17 +12,35 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!--        <Spinner-->
+        <!--            android:id="@+id/spinnerImages"-->
+        <!--            android:layout_width="409dp"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_marginTop="32dp"-->
+        <!--            android:textColor="#000000"-->
+        <!--            app:layout_constraintEnd_toEndOf="parent"-->
+        <!--            app:layout_constraintHorizontal_bias="0.5"-->
+        <!--            app:layout_constraintStart_toEndOf="@+id/nav_view"-->
+        <!--            app:layout_constraintStart_toStartOf="parent"-->
+        <!--            app:layout_constraintTop_toBottomOf="@+id/textView"-->
+        <!--            style="@android:style/Widget.Holo.Light.Spinner"/>-->
+
+
+        <!--        This spinner is implemented using the library https://github.com/miteshpithadiya/SearchableSpinner-->
+        <!--        it works good.-->
+
         <Button
             android:id="@+id/ShowRandomBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="173dp"
+            android:layout_marginBottom="76dp"
             android:text="Show random image"
+            app:layout_constraintBottom_toTopOf="@+id/textView"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/nav_view"
+            app:layout_constraintHorizontal_bias="0.502"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/spinnerFunctionality"
+            app:layout_constraintVertical_bias="0.975" />
 
         <Button
             android:id="@+id/invisibleBtn"
@@ -32,47 +50,40 @@
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent" />
 
         <Chronometer
             android:id="@+id/simpleChronometer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/ShowRandomBtn"
+            android:layout_marginTop="44dp"
+            app:layout_constraintBottom_toTopOf="@+id/txtChooseFunctionality"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-<!--        <Spinner-->
-<!--            android:id="@+id/spinnerImages"-->
-<!--            android:layout_width="409dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginTop="32dp"-->
-<!--            android:textColor="#000000"-->
-<!--            app:layout_constraintEnd_toEndOf="parent"-->
-<!--            app:layout_constraintHorizontal_bias="0.5"-->
-<!--            app:layout_constraintStart_toEndOf="@+id/nav_view"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toBottomOf="@+id/textView"-->
-<!--            style="@android:style/Widget.Holo.Light.Spinner"/>-->
-
-
-<!--        This spinner is implemented using the library https://github.com/miteshpithadiya/SearchableSpinner-->
-<!--        it works good.-->
-        <com.toptoche.searchablespinnerlibrary.SearchableSpinner
-            android:id="@+id/spinnerImages"
+        <Spinner
+            android:id="@+id/spinnerFunctionality"
             android:layout_width="409dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="192dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Select an image"
             android:textColor="#000000"
+            app:layout_constraintBottom_toTopOf="@+id/spinnerImages"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/nav_view"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView"
-            style="@android:style/Widget.Holo.Light.Spinner"/>
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/imgName"
@@ -86,16 +97,33 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/txtChooseFunctionality"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="299dp"
-            android:text="Select an image"
+            android:layout_marginBottom="16dp"
+            android:text="Choose the type of functionality"
+            android:textColor="#000000"
+            app:layout_constraintBottom_toTopOf="@+id/spinnerFunctionality"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.446"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="20dp" />
+
+        <com.toptoche.searchablespinnerlibrary.SearchableSpinner
+            android:id="@+id/spinnerImages"
+            style="@android:style/Widget.Holo.Light.Spinner"
+            android:layout_width="409dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="120dp"
             android:textColor="#000000"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/nav_view"
             app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -2,6 +2,7 @@ package com.daniele22.mlkitdemo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,8 +26,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import com.daniele22.mlkitdemo.CaptureFaceDetection.GalleryFaceDetectionActivity;
+import com.daniele22.mlkitdemo.CaptureFaceDetection.GalleryFaceSegmentationActivity;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceContour;
@@ -47,6 +52,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import com.daniele22.mlkitdemo.utils.*;
 
 interface Callback {
     void myResponseCallback(String result, int index);
@@ -75,6 +82,11 @@ public class MainActivity extends AppCompatActivity {
 
     private final boolean do_background_operation = false;
     private Context context;
+    private Spinner functionalitySpinner;
+
+    private String KEY_FACE_ANALYSIS = "Face Analysis";
+    private String KEY_FACE_SEGMENTATION = "Face Segmentation";
+
 
     /**
      * Get the list of filenames from a file called 'celeba_file_names.txt' save in the asset package
@@ -153,25 +165,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Check if all permission are granted
-     *
-     * @return bool
-     */
-    private boolean allPermissionsGranted() {
-        for (String permission : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_PERMISSION) {
-            if (allPermissionsGranted()) {
+            if (utils.allPermissionsGranted(REQUIRED_PERMISSIONS, this)) {
                 initHome();
             } else {
                 Toast.makeText(this,
@@ -189,13 +187,30 @@ public class MainActivity extends AppCompatActivity {
         context = getApplicationContext();
         imgNameView = findViewById(R.id.imgName);
         invisibleBtn = findViewById(R.id.invisibleBtn);
+
+        //get the spinner from the xml.
+        functionalitySpinner = findViewById(R.id.spinnerFunctionality);
+        //create a list of items for the spinner.
+        String[] items = new String[]{KEY_FACE_ANALYSIS, KEY_FACE_SEGMENTATION};
+        //create an adapter to describe how the items are displayed, adapters are used in several places in android.
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
+        //set the spinners adapter to the previously created one.
+        functionalitySpinner.setAdapter(adapter);
+
+        //settings initialization and read settings
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+//        SharedPreferences sharedPref =
+//                PreferenceManager.getDefaultSharedPreferences(this);
+//        Boolean switchPref = sharedPref.getBoolean(SettingsActivity.KEY_BBOX_FACE, false);
+
         // The invisible button is needed to avoid lock of the screen
         invisibleBtn.setOnClickListener(v -> System.out.println("CLICKED INVISIBLE BUTTON"));
-        if (!allPermissionsGranted()) {
+        if (!utils.allPermissionsGranted(REQUIRED_PERMISSIONS, this)) {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSION);
         } else {
             initHome();
         }
+
         // add chronometer to the view
         Chronometer simpleChronometer = findViewById(R.id.simpleChronometer); // initiate a chronometer
         simpleChronometer.start(); // start a chronometer
@@ -227,8 +242,13 @@ public class MainActivity extends AppCompatActivity {
                 // change activity when an item is selected
                 String filename = myList.get(position);
                 System.out.println("Selected item: " + filename);
-                if (!filename.equals("No Selection"))
-                    switchActivityWithImg(GalleryFaceDetectionActivity.class, filename);
+                if (!filename.equals("No Selection")) {
+                    System.out.println("Spinner selected item: " + functionalitySpinner.getSelectedItem());
+                    if(functionalitySpinner.getSelectedItem().equals(KEY_FACE_ANALYSIS))
+                        switchActivityWithImg(GalleryFaceDetectionActivity.class, filename);
+                    else
+                        switchActivityWithImg(GalleryFaceSegmentationActivity.class, filename);
+                }
             }
 
             @Override
@@ -242,7 +262,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 System.out.println("Btn switch");
-                switchActivity(GalleryFaceDetectionActivity.class);
+                if(functionalitySpinner.getSelectedItem().equals(KEY_FACE_ANALYSIS))
+                    switchActivity(GalleryFaceDetectionActivity.class);
+                else
+                    switchActivity(GalleryFaceSegmentationActivity.class);
             }
         });
 
@@ -254,6 +277,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+
+    // create an action bar button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
+        // If you don't have res/menu, just create a directory named "menu" inside res
+        getMenuInflater().inflate(R.menu.nav_drawer, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    // handle button activities
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.settings_menu) {
+            // do something here
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
 //    private void initNavigationDrawer() {
 //        drawerLayout = findViewById(R.id.drawer_layout);

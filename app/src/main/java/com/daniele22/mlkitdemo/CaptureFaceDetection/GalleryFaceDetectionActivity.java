@@ -1,12 +1,14 @@
 package com.daniele22.mlkitdemo.CaptureFaceDetection;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -25,9 +27,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import com.daniele22.mlkitdemo.MainActivity;
 import com.daniele22.mlkitdemo.R;
+import com.daniele22.mlkitdemo.SettingsActivity;
+import com.daniele22.mlkitdemo.utils;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
@@ -62,6 +67,9 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
     private String imgFilename;
     private ArrayList<String> filenames;
     public static Handler handler = new Handler();
+    private Boolean showBboxFace,showBboxEye, showBboxEyebrow, showBboxNose, showBboxLip;
+    private Boolean showContourFace,showContourEye, showContourEyebrow, showContourNose, showContourLip;
+    private Boolean showLandmark, showAxis;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {  // function called on the creation of the page
@@ -79,8 +87,27 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
         }
         filenames = MainActivity.getFilenameList();
 
+        // Read settings
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        //bbox settings
+        showBboxFace = sharedPref.getBoolean(SettingsActivity.KEY_BBOX_FACE, false);
+        showBboxEye = sharedPref.getBoolean(SettingsActivity.KEY_BBOX_EYE, false);
+        showBboxEyebrow = sharedPref.getBoolean(SettingsActivity.KEY_BBOX_EYEBROW, false);
+        showBboxNose = sharedPref.getBoolean(SettingsActivity.KEY_BBOX_NOSE, false);
+        showBboxLip = sharedPref.getBoolean(SettingsActivity.KEY_BBOX_LIP, false);
+        //contour settings
+        showContourFace = sharedPref.getBoolean(SettingsActivity.KEY_CONTOUR_FACE, false);
+        showContourEye = sharedPref.getBoolean(SettingsActivity.KEY_CONTOUR_EYE, false);
+        showContourEyebrow = sharedPref.getBoolean(SettingsActivity.KEY_CONTOUR_EYEBROW, false);
+        showContourNose = sharedPref.getBoolean(SettingsActivity.KEY_CONTOUR_NOSE, false);
+        showContourLip = sharedPref.getBoolean(SettingsActivity.KEY_CONTOUR_LIP, false);
+        //landmark setting
+        showLandmark = sharedPref.getBoolean(SettingsActivity.KEY_LANDMARKS, false);
+        //axis setting
+        showAxis = sharedPref.getBoolean(SettingsActivity.KEY_ORIENTATION_AXIS, false);
+
         // check if permissions are granted
-        if (allPermissionsGranted()) {
+        if (utils.allPermissionsGranted(REQUIRED_PERMISSIONS, this)) {
             initViews();
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSION);
@@ -271,28 +298,30 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
             }
             // End debugging
             getProps(face);
-            drawLandMark(face.getLandmark(FaceLandmark.LEFT_EAR));
-            drawLandMark(face.getLandmark(FaceLandmark.RIGHT_EAR));
-            drawLandMark(face.getLandmark(FaceLandmark.LEFT_EYE));
-            drawLandMark(face.getLandmark(FaceLandmark.RIGHT_EYE));
-            drawLandMark(face.getLandmark(FaceLandmark.MOUTH_BOTTOM));
-            drawLandMark(face.getLandmark(FaceLandmark.MOUTH_LEFT));
-            drawLandMark(face.getLandmark(FaceLandmark.MOUTH_RIGHT));
-            drawLandMark(face.getLandmark(FaceLandmark.LEFT_CHEEK));
-            drawLandMark(face.getLandmark(FaceLandmark.RIGHT_CHEEK));
-            drawContours(face.getContour(FaceContour.FACE));
-            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM));
-            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM));
-            drawContours(face.getContour(FaceContour.LEFT_EYE));
-            drawContours(face.getContour(FaceContour.RIGHT_EYE));
-            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_TOP));
-            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_TOP));
-            drawContours(face.getContour(FaceContour.LOWER_LIP_BOTTOM));
-            drawContours(face.getContour(FaceContour.LOWER_LIP_TOP));
-            drawContours(face.getContour(FaceContour.UPPER_LIP_BOTTOM));
-            drawContours(face.getContour(FaceContour.UPPER_LIP_TOP));
-            drawContours(face.getContour(FaceContour.NOSE_BRIDGE));
-            drawContours(face.getContour(FaceContour.NOSE_BOTTOM));
+            if(showLandmark) {
+                drawLandMark(face.getLandmark(FaceLandmark.LEFT_EAR));
+                drawLandMark(face.getLandmark(FaceLandmark.RIGHT_EAR));
+                drawLandMark(face.getLandmark(FaceLandmark.LEFT_EYE));
+                drawLandMark(face.getLandmark(FaceLandmark.RIGHT_EYE));
+                drawLandMark(face.getLandmark(FaceLandmark.MOUTH_BOTTOM));
+                drawLandMark(face.getLandmark(FaceLandmark.MOUTH_LEFT));
+                drawLandMark(face.getLandmark(FaceLandmark.MOUTH_RIGHT));
+                drawLandMark(face.getLandmark(FaceLandmark.LEFT_CHEEK));
+                drawLandMark(face.getLandmark(FaceLandmark.RIGHT_CHEEK));
+            }
+            drawContours(face.getContour(FaceContour.FACE), showAxis, showContourFace, showBboxFace);
+            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_BOTTOM), false, showContourEyebrow, showBboxEyebrow);
+            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_BOTTOM), false, showContourEyebrow, showBboxEyebrow);
+            drawContours(face.getContour(FaceContour.LEFT_EYE), false, showContourEye, showBboxEye);
+            drawContours(face.getContour(FaceContour.RIGHT_EYE), false, showContourEye, showBboxEye);
+            drawContours(face.getContour(FaceContour.LEFT_EYEBROW_TOP), false, showContourEyebrow, showBboxEyebrow);
+            drawContours(face.getContour(FaceContour.RIGHT_EYEBROW_TOP), false, showContourEyebrow, showBboxEyebrow);
+            drawContours(face.getContour(FaceContour.LOWER_LIP_BOTTOM), false, showContourLip, showBboxLip);
+            drawContours(face.getContour(FaceContour.LOWER_LIP_TOP), false, showContourLip, showBboxLip);
+            drawContours(face.getContour(FaceContour.UPPER_LIP_BOTTOM), false, showContourLip, showBboxLip);
+            drawContours(face.getContour(FaceContour.UPPER_LIP_TOP), false, showContourLip, showBboxLip);
+            drawContours(face.getContour(FaceContour.NOSE_BRIDGE), false, showContourNose, showBboxNose);
+            drawContours(face.getContour(FaceContour.NOSE_BOTTOM), false, showContourNose, showBboxNose);
         }
         imageViewCanvas.setImageBitmap(bitmap);
     }
@@ -348,7 +377,7 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
      * Draw the contour in the canvas
      * @param contour face contour to form the list of points (x, y)
      */
-    private void drawContours(FaceContour contour) {
+    private void drawContours(FaceContour contour, boolean drawAx, boolean drawContour, boolean drawBbox) {
         int counter = 0;
         if (contour != null){
             List<PointF> points = contour.getPoints();
@@ -361,25 +390,79 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
                 if (point.x > x_max) x_max = point.x;
                 if (point.y < y_min) y_min = point.y;
                 if (point.y > y_max) y_max = point.y;
-                if (counter != points.size() - 1) {
-                    canvas.drawLine(point.x,
-                            point.y,
-                            points.get(counter + 1).x,
-                            points.get(counter + 1).y,
-                            linePaint);
-                } else {
-                    canvas.drawLine(point.x,
-                            point.y,
-                            points.get(0).x,
-                            points.get(0).y,
-                            linePaint);
+                if (drawContour){  // check if draw contour is enabled
+                    if (counter != points.size() - 1) {
+                        canvas.drawLine(point.x,
+                                point.y,
+                                points.get(counter + 1).x,
+                                points.get(counter + 1).y,
+                                linePaint);
+                    } else {
+                        canvas.drawLine(point.x,
+                                point.y,
+                                points.get(0).x,
+                                points.get(0).y,
+                                linePaint);
+                    }
+                    counter++;
+                    canvas.drawCircle(point.x, point.y, 3, dotPaint);
                 }
-                counter++;
-                canvas.drawCircle(point.x, point.y, 3, dotPaint);
             }
-            canvas.drawRect(x_min, y_min, x_max, y_max, linePaint);
+            // check if draw bbox is enabled
+            if (drawBbox)
+                canvas.drawRect(x_min, y_min, x_max, y_max, linePaint);
+            // check if draw orientation axis is enabled
+            if (drawAx){  // TODO controllo sui valori nulli
+                drawAxis(Float.parseFloat((String) rotXView.getText()),
+                        -Float.parseFloat((String) rotYView.getText()),
+                        -Float.parseFloat((String) rotZView.getText()),
+                        (x_min+x_max)/2,
+                        (y_min+y_max)/2,
+                        Math.abs(x_max-x_min));
+            }
         }
     }
+
+    private void drawAxis(float pitch, float yaw, float roll, float tdx, float tdy, float size){
+        // Referenced from HopeNet https://github.com/natanielruiz/deep-head-pose
+        pitch = (float) (pitch * Math.PI / 180);
+        yaw = (float) (-(yaw * Math.PI / 180));
+        roll = (float) (roll * Math.PI / 180);
+
+//        height, width = img.shape[:2]
+//        tdx = width / 2
+//        tdy = height / 2
+
+        // X-Axis pointing to right.
+        float x1 = (float) (size * (Math.cos(yaw) * Math.cos(roll)) + tdx);
+        float y1 = (float) (size * (Math.cos(pitch) * Math.sin(roll) + Math.cos(roll) * Math.sin(pitch) * Math.sin(yaw)) + tdy);
+
+        // Y-Axis |
+        //        v
+        float x2 = (float) (size * (-Math.cos(yaw) * Math.sin(roll)) + tdx);
+        float y2 = (float) (size * (Math.cos(pitch) * Math.cos(roll) - Math.sin(pitch) * Math.sin(yaw) * Math.sin(roll)) + tdy);
+
+        // Z-Axis (out of the screen)
+        float x3 = (float) (size * (Math.sin(yaw)) + tdx);
+        float y3 = (float) (size * (-Math.cos(yaw) * Math.sin(pitch)) + tdy);
+
+        Paint axisPaint = new Paint();
+        axisPaint.setColor(Color.GRAY);
+        axisPaint.setStyle(Paint.Style.STROKE);
+        axisPaint.setStrokeWidth(3f);
+
+//        Path path1 = new Path();
+//        path1.moveTo(tdx, tdy);
+//        path1.lineTo(x1, y1);
+//        canvas.drawPath(path1, linePaint);
+
+        canvas.drawLine(tdx, tdy, x1, y1, axisPaint);
+        axisPaint.setColor(Color.WHITE);
+        canvas.drawLine(tdx, tdy, x2, y2, axisPaint);
+        axisPaint.setColor(Color.CYAN);
+        canvas.drawLine(tdx, tdy, x3, y3, axisPaint);
+    }
+
 
     /**
      * Initialize drawing parameters, colors and create the bitmap image
@@ -401,25 +484,11 @@ public class GalleryFaceDetectionActivity extends AppCompatActivity {
         linePaint.setStrokeWidth(1f);
     }
 
-
-    /**
-     * Check if all permissions are granted
-     * @return
-     */
-    private boolean allPermissionsGranted() {
-        for (String permission : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_PERMISSION) {
-            if (allPermissionsGranted()) {
+            if (utils.allPermissionsGranted(REQUIRED_PERMISSIONS, this)) {
                 initViews();
             } else {
                 Toast.makeText(this,

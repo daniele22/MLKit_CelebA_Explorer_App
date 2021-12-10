@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="landmark_face"
+        app:title="Draw landmark in face detection"
+        app:summary="Landmarks are: Ears, Eyes, Mouth, Cheeks"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="bbox_face"
+        app:title="Draw face bbox in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="bbox_eye"
+        app:title="Draw eye bbox in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="bbox_eyebrow"
+        app:title="Draw eyebrow bbox in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="bbox_nose"
+        app:title="Draw nose bbox in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="bbox_lip"
+        app:title="Draw lip bbox in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="contour_face"
+        app:title="Draw face contour in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="contour_eye"
+        app:title="Draw eye contour in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="contour_eyebrow"
+        app:title="Draw eyebrow contour in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="contour_nose"
+        app:title="Draw nose contour in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="contour_lip"
+        app:title="Draw lip contour in face detection"
+        app:defaultValue="true"/>
+
+    <SwitchPreferenceCompat
+        app:key="draw_axis"
+        app:title="Draw axis for face orientation"
+        app:defaultValue="true"/>
+
+<!--    <Preference-->
+<!--        app:key="feedback"-->
+<!--        app:title="Send feedback"-->
+<!--        app:summary="Report technical issues or suggest new features"/>-->
+
+</PreferenceScreen>
