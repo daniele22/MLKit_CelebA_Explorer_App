@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -85,6 +86,11 @@ public class GalleryFaceSegmentationActivity extends AppCompatActivity {
             initViews();
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSION);
+        }
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
         }
 
     }
@@ -302,19 +308,31 @@ public class GalleryFaceSegmentationActivity extends AppCompatActivity {
         @ColorInt int[] colors = new int[maskWidth * maskHeight];
         for (int i = 0; i < maskWidth * maskHeight; i++) {
             //float backgroundLikelihood = 1 - byteBuffer.getFloat();
-            float backgroundLikelihood =  byteBuffer.getFloat();
-            if (backgroundLikelihood > 0.9) {
-                System.out.println("OOOOOK");
+            float foregroundLikelihood =  byteBuffer.getFloat();
+            if (foregroundLikelihood > 0.9) {
                 colors[i] = Color.argb(128, 255, 0, 255);
-            } else if (backgroundLikelihood > 0.2) {
+            } else if (foregroundLikelihood > 0.2) {
                 // Linear interpolation to make sure when backgroundLikelihood is 0.2, the alpha is 0 and
                 // when backgroundLikelihood is 0.9, the alpha is 128.
                 // +0.5 to round the float value to the nearest int.
-                int alpha = (int) (182.9 * backgroundLikelihood - 36.6 + 0.5);
+                int alpha = (int) (182.9 * foregroundLikelihood - 36.6 + 0.5);
                 colors[i] = Color.argb(alpha, 255, 0, 255);
             }
         }
         return colors;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case android.R.id.home:
+                System.out.println("Home ");
+                Intent homeIntent = new Intent(this, MainActivity.class);
+                homeIntent.putExtra("reloadAll", false);
+                startActivity(homeIntent);
+        }
+        return (super.onOptionsItemSelected(menuItem));
     }
 
 }

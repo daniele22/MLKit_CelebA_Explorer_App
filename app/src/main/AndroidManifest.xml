@@ -12,9 +12,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".CaptureFaceDetection.GalleryFaceSegmentationActivity"
-            android:exported="false"
-            android:label="@string/title_activity_gallery_face_segmentation"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:exported="false"/>
         <activity android:name=".CaptureFaceDetection.GalleryFaceDetectionActivity" />
         <activity android:name=".SettingsActivity">
             android:label="Settings"
@@ -26,7 +24,6 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
